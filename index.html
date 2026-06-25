@@ -206,10 +206,14 @@ body.premium #extraPaywall { display: none !important; }
     </div>
     <div style="font-size:11px;color:var(--t3);margin-top:5px;margin-bottom:14px">Казахстанская 5-балльная, 100-балльная или уже 4.0 — определим сами</div>
 
-    <div class="fg2">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px">
       <div class="fg">
         <label>IELTS / TOEFL</label>
-        <input type="number" id="ielts" placeholder="6.5 или 85 (TOEFL)" step="0.5">
+        <input type="number" id="ielts" placeholder="6.5 / 85 TOEFL" step="0.5">
+      </div>
+      <div class="fg">
+        <label>SAT (если есть)</label>
+        <input type="number" id="sat" placeholder="1200" min="400" max="1600">
       </div>
       <div class="fg">
         <label>Уровень</label>
@@ -766,6 +770,7 @@ async function analyze() {
 
   const gpa4 = (getGPA4() || parseFloat(document.getElementById('gpaInput').value)).toFixed(2);
   const ielts = document.getElementById('ielts').value;
+  const sat = document.getElementById('sat').value;
   const country = document.getElementById('country').value;
   const degree = document.getElementById('degree').value;
   const budget = document.getElementById('budget').value;
@@ -784,7 +789,7 @@ async function analyze() {
 
 Ровно 3 программы. Только реальные университеты: Корея — Yonsei, Korea Univ, SKKU, Hanyang, Ewha, Sogang, Dankook; Гонконг — HKU, HKUST, CUHK, PolyU, CityU.
 
-Профиль: GPA(4.0)=${gpa4}, IELTS/TOEFL=${ielts}, Направление=${subjects}, Страна=${CN[country]}, Уровень=${degree==='bachelor'?'Бакалавриат':'Магистратура'}, Бюджет=${parseInt(budget)===0?'только стипендия':'$'+parseInt(budget).toLocaleString()+'/год'}`;
+Профиль: GPA(4.0)=${gpa4}, IELTS/TOEFL=${ielts}${sat?', SAT='+sat:''}, Направление=${subjects}, Страна=${CN[country]}, Уровень=${degree==='bachelor'?'Бакалавриат':'Магистратура'}, Бюджет=${parseInt(budget)===0?'только стипендия':'$'+parseInt(budget).toLocaleString()+'/год'}`;
 
   try {
     const res = await fetch('/api/chat', {
@@ -793,7 +798,7 @@ async function analyze() {
     });
     const data = await res.json();
     const parsed = JSON.parse(data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
-    showResults(parsed, gpa4, ielts, subjects, country, degree);
+    showResults(parsed, gpa4, ielts, sat, subjects, country, degree);
   } catch(e) {
     clearInterval(loadTimer);
     document.getElementById('profLoad').style.display = 'none';
@@ -802,7 +807,7 @@ async function analyze() {
   }
 }
 
-function showResults(data, gpa4, ielts, subjects, country, degree) {
+function showResults(data, gpa4, ielts, sat, subjects, country, degree) {
   clearInterval(loadTimer);
   document.getElementById('profLoad').style.display = 'none';
   document.getElementById('profResults').style.display = 'block';
@@ -810,6 +815,7 @@ function showResults(data, gpa4, ielts, subjects, country, degree) {
   document.getElementById('pillsWrap').innerHTML = [
     `<span class="pill">GPA <strong>${gpa4} / 4.0</strong></span>`,
     `<span class="pill">IELTS/TOEFL <strong>${ielts}</strong></span>`,
+    sat?`<span class="pill">SAT <strong>${sat}</strong></span>`:'',
     `<span class="pill">${subjects}</span>`,
     `<span class="pill">${cf[country]} ${CN[country]}</span>`,
     `<span class="pill">${degree==='bachelor'?'Бакалавриат':'Магистратура'}</span>`
