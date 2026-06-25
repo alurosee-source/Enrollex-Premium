@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enrollex AI — Premium</title>
+<title>Enrollex AI Premium</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
@@ -130,6 +130,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 .usage-dot{width:8px;height:8px;border-radius:50%;background:var(--b)}
 .usage-dot.used{background:var(--y)}.usage-dot.avail{background:var(--g)}
 .fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+
+/* Premium mode - hides all restrictions */
+body.premium .paywall { display: none !important; }
+body.premium .blurred { filter: none !important; opacity: 1 !important; pointer-events: auto !important; user-select: auto !important; }
+body.premium .usage-bar { display: none !important; }
+body.premium #essayPaywall { display: none !important; }
+body.premium #extraPaywall { display: none !important; }
 </style>
 </head>
 <body>
@@ -263,10 +270,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     <div id="uniWrap"></div>
 
     <div class="slabel" style="margin-top:20px">Полный план поступления</div>
-    
+    <div class="blurred">
+      <div class="uni-card"><div class="uni-name">📋 Чеклист документов</div><div class="uni-prog" style="margin-top:3px">Personal Statement · Рекомендации · Диплом · Transcript · дедлайны</div></div>
       <div class="uni-card" style="margin-top:7px"><div class="uni-name">📅 План по неделям — 12 недель</div><div class="uni-prog" style="margin-top:3px">Что делать сейчас · внеклассная деятельность · стипендии</div></div>
     </div>
-    
+    <div class="paywall">
+      <div style="font-size:22px;margin-bottom:8px">🔒</div>
+      <div class="pw-t">Полный план поступления</div>
+      <div class="pw-d">Чеклист документов, план по неделям и дедлайны — конкретно под твои программы.</div>
+      <div class="pw-feats">
+        <div class="pw-f"><span class="ck">✓</span>Чеклист документов под каждый универ</div>
+        <div class="pw-f"><span class="ck">✓</span>План по неделям на 3 месяца</div>
+        <div class="pw-f"><span class="ck">✓</span>Дедлайны + уведомления об изменениях</div>
+        <div class="pw-f"><span class="ck">✓</span>Полный AI-фидбек на эссе</div>
+        <div class="pw-f"><span class="ck">✓</span>Неограниченные профили</div>
+      </div>
       <div class="price-row"><div class="price">4 900 ₸</div><div class="per">/ месяц</div></div>
       <div class="price-alt">или <span>9 900 ₸ / 3 месяца</span> — экономия 33%</div>
       <button class="btn btn-y" style="margin-top:0" onclick="pay()">Оформить подписку →</button>
@@ -377,8 +395,28 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
   <div class="heading">Фидбек на эссе</div>
   <div class="subhead">Вставь черновик или тезисы — получи честный разбор</div>
 
-  
-  
+  <div class="usage-bar"><span class="usage-label">Бесплатных попыток эссе</span><div class="usage-dots" id="essayDots"></div></div>
+  <div id="essayPaywall" style="display:none"><div class="paywall"><div style="font-size:22px;margin-bottom:8px">✍️</div><div class="pw-t">Попытки закончились</div><div class="pw-d">Оформи подписку для неограниченного фидбека.</div><button class="btn btn-y" style="margin-top:0" onclick="pay()">Оформить →</button></div></div>
+  <div id="essayForm">
+    <div class="fg">
+      <label>Тип документа</label>
+      <select id="essayType">
+        <option value="ps">Personal Statement</option>
+        <option value="sp">Study Plan / SOP</option>
+        <option value="ml">Motivational Letter</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Для какого университета (необязательно)</label>
+      <input type="text" id="essayUni" placeholder="Yonsei UIC, HKUST Business...">
+    </div>
+    <div class="fg">
+      <label>Черновик или тезисы (минимум 2–3 предложения)</label>
+      <textarea id="essayText" placeholder="Вставь черновик или напиши о чём хочешь писать — даже в виде тезисов. Например: хочу написать о переезде из Алматы в другой город, как это повлияло на мой взгляд на образование и почему хочу учиться в Корее..."></textarea>
+    </div>
+    <button class="btn btn-y" onclick="essayGo()">Получить фидбек →</button>
+    <div style="font-size:11px;color:var(--t3);margin-top:6px;text-align:center">Бесплатно · краткий разбор · полный фидбек в подписке</div>
+  </div>
 
   <div class="loading" id="essayLoad">
     <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
@@ -409,15 +447,29 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     <div class="slabel">Главный совет</div>
     <div class="tip-box" id="eTip"></div>
 
-    
+    <div class="paywall">
+      <div style="font-size:20px;margin-bottom:7px">✍️</div>
+      <div class="pw-t">Хочешь полный разбор?</div>
+      <div class="pw-d">В подписке — детальный фидбек по каждому абзацу, переработка структуры и сравнение с успешными эссе из базы Enrollex.</div>
+      <button class="btn btn-y" style="margin-top:0" onclick="pay()">Открыть полный фидбек →</button>
+    </div>
+
+    <button class="btn btn-g" onclick="restartEssay()">← Другое эссе</button>
+  </div>
+</div>
 
 
 <!-- EXTRA -->
 <div class="page" id="tab-extra">
   <div class="heading">Анализ достижений</div>
   <div class="subhead">Введи активности — AI оценит насколько они сильные для поступления</div>
-  
-  
+  <div class="usage-bar"><span class="usage-label">Бесплатных попыток</span><div class="usage-dots" id="extraDots"></div></div>
+  <div id="extraPaywall" style="display:none"><div class="paywall"><div style="font-size:22px;margin-bottom:8px">🏆</div><div class="pw-t">Попытки закончились</div><div class="pw-d">Оформи подписку для неограниченного анализа.</div><button class="btn btn-y" style="margin-top:0" onclick="pay()">Оформить →</button></div></div>
+  <div id="extraForm">
+    <div class="fg2">
+      <div class="fg"><label>Страна</label><select id="extraCountry"><option value="korea">🇰🇷 Корея</option><option value="hongkong">🇭🇰 Гонконг</option><option value="both">Оба</option></select></div>
+      <div class="fg"><label>Направление</label><select id="extraField"><option value="business">Бизнес</option><option value="cs">Computer Science</option><option value="engineering">Инженерия</option><option value="economics">Экономика</option><option value="design">Дизайн</option><option value="social">IR / Соц.науки</option><option value="medicine">Медицина</option><option value="other">Другое</option></select></div>
+    </div>
     <div class="fg"><label>Твои достижения и активности</label>
       <textarea id="extraText" style="min-height:140px" placeholder="Перечисли всё что есть:&#10;— Олимпиады и места&#10;— Волонтёрство&#10;— Спорт и соревнования&#10;— Проекты и стартапы&#10;— Курсы и сертификаты&#10;— Стажировки&#10;— Творчество"></textarea>
     </div>
@@ -500,7 +552,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     <!-- Future months — BLURRED + PAYWALL -->
     <div class="slabel">Следующие месяцы</div>
     <div style="position:relative">
-      
+      <div class="blurred" id="planFutureBlur">
+        <div class="uni-card" style="margin-bottom:8px">
+          <div class="uni-name" style="margin-bottom:4px">📌 Месяц 2</div>
+          <div class="uni-note" style="padding-top:0;border:none">Подготовка рекомендательных писем · черновик Personal Statement · регистрация на IELTS</div>
+        </div>
         <div class="uni-card" style="margin-bottom:8px">
           <div class="uni-name" style="margin-bottom:4px">📌 Месяц 3</div>
           <div class="uni-note" style="padding-top:0;border:none">Финальная версия эссе · сбор документов · подача заявок</div>
@@ -512,7 +568,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
       </div>
     </div>
 
-    
+    <div class="paywall" style="margin-top:10px">
+      <div style="font-size:20px;margin-bottom:7px">📅</div>
+      <div class="pw-t">Полный план до дедлайна</div>
+      <div class="pw-d">Пошаговый план по каждому месяцу — что делать, к какому сроку, в какой последовательности.</div>
+      <div class="pw-feats">
+        <div class="pw-f"><span class="ck">✓</span>Детальный план по месяцам до дедлайна</div>
+        <div class="pw-f"><span class="ck">✓</span>Внеклассная деятельность под профиль</div>
+        <div class="pw-f"><span class="ck">✓</span>Дедлайны стипендий по твоим программам</div>
+        <div class="pw-f"><span class="ck">✓</span>Уведомления если что-то изменилось</div>
+      </div>
       <div class="price-row"><div class="price">4 900 ₸</div><div class="per">/ месяц</div></div>
       <div class="price-alt">или <span>9 900 ₸ / 3 месяца</span> — экономия 33%</div>
       <button class="btn btn-y" style="margin-top:0" onclick="pay()">Открыть полный план →</button>
@@ -591,6 +656,7 @@ function showAuthMsg(m,t){
 }
 
 let isPremium = true;
+document.body.classList.add("premium");
 
 async function showApp(u){
   currentUser=u;
@@ -604,13 +670,13 @@ async function showApp(u){
     const active=subs&&subs.find(s=>s.status==='active'&&new Date(s.expires_at)>new Date());
     if(active){
       isPremium=true;
-      document.getElementById('navBadge').textContent='Premium ⭐';
-      document.getElementById('navBadge').style.background='rgba(245,200,66,0.2)';
-      document.getElementById('navBadge').style.borderColor='rgba(245,200,66,0.5)';
+      if(document.getElementById('navBadge'))document.getElementById('navBadge').textContent='Premium ⭐';
+      if(document.getElementById('navBadge'))document.getElementById('navBadge').style.background='rgba(245,200,66,0.2)';
+      if(document.getElementById('navBadge'))document.getElementById('navBadge').style.borderColor='rgba(245,200,66,0.5)';
       document.querySelectorAll('.paywall,.blurred').forEach(el=>el.style.display='none');
     } else {
       isPremium=false;
-      document.getElementById('navBadge').textContent='Premium ⭐';
+      if(document.getElementById('navBadge'))document.getElementById('navBadge').textContent='Premium ⭐';
     }
   }catch(e){console.log('sub error',e);isPremium=false;}
 
