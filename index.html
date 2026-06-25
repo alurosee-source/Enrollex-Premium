@@ -699,10 +699,7 @@ async function incUsage(f){
 }
 
 async function loadBars(){
-  const ec=await getUsage('essay');
-  const xc=await getUsage('extra');
-  renderDots('essayDots',ec,FL.essay);
-  renderDots('extraDots',xc,FL.extra);
+  // Premium version - no usage tracking needed
 }
 
 function renderDots(id,used,total){
@@ -840,17 +837,6 @@ function restart() {
 }
 
 async function essayGo() {
-  if(currentUser){
-    const count=await getUsage('essay');
-    if(count>=FL.essay){
-      document.getElementById('essayForm').style.display='none';
-      document.getElementById('essayPaywall').style.display='block';
-      return;
-    }
-    await incUsage('essay');
-    const nc=await getUsage('essay');
-    renderDots('essayDots',nc,FL.essay);
-  }
   const text = document.getElementById('essayText').value.trim();
   if (text.length < 20) { alert('Напиши хотя бы несколько предложений'); return; }
   const type = document.getElementById('essayType').value;
@@ -877,6 +863,7 @@ async function essayGo() {
     const parsed = JSON.parse(data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
     showEssay(parsed);
   } catch(e) {
+    console.error('essay error:', e);
     document.getElementById('essayLoad').style.display = 'none';
     document.getElementById('essayForm').style.display = 'block';
     alert('Ошибка. Попробуй ещё раз.');
@@ -1094,12 +1081,6 @@ init();
 
 async function extraGo(){
   if(false){
-    const count=await getUsage('extra');
-    if(count>=FL.extra){
-      document.getElementById('extraForm').style.display='none';
-      document.getElementById('extraPaywall').style.display='block';
-      return;
-    }
   }
   const text=document.getElementById('extraText').value.trim();
   if(text.length<10){alert('Опиши хотя бы одно достижение');return;}
@@ -1108,7 +1089,7 @@ async function extraGo(){
   const cn={korea:'Южная Корея',hongkong:'Гонконг',both:'Корея и Гонконг'};
   document.getElementById('extraForm').style.display='none';
   document.getElementById('extraLoad').style.display='block';
-  if(currentUser){const nc=await incUsage('extra');renderDots('extraDots',nc,FL.extra);}
+
   try{
     const prompt='Ментор Enrollex. Оцени внеклассные достижения студента из Казахстана для поступления в '+cn[country]+', направление '+field+'. ТОЛЬКО JSON без markdown: {"score":число 1-10,"scoreLabel":"Слабый|Средний|Хороший|Сильный профиль","scoreDesc":"одно предложение","strengths":["2-3 конкретных"],"weaknesses":["2-3 чего не хватает"],"tip":"конкретное действие что добавить"} Достижения студента: "'+text+'"';
     const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:prompt}]})});
